@@ -1,5 +1,3 @@
-#lab 3
-
 #!/usr/bin/env pybricks-micropython
 from pybricks.hubs import EV3Brick
 from pybricks.ev3devices import (Motor, TouchSensor, ColorSensor,
@@ -9,6 +7,7 @@ from pybricks.tools import wait, StopWatch, DataLog
 from pybricks.media.ev3dev import SoundFile, ImageFile
 
 from utime import sleep
+import time
 
 
 # This program requires LEGO EV3 MicroPython v2.0 or higher.
@@ -35,14 +34,21 @@ right_motor = Motor(Port.A)
 
 wheel_diameter = 5.6
 wheel_circum = (3.14159265358979) * wheel_diameter
+L = 12
 
 # Objective 1
+start_time = time.time()
 while not bump_sensor.pressed():
     left_motor.run(200)
     right_motor.run(200)
     
 left_motor.stop()
 right_motor.stop()
+
+ev3.screen.clear()
+time_taken = time.time() - start_time
+print(time.time() - start_time)
+ev3.screen.draw_text(50, 60, "Time: {}".format(time_taken))
 
 rotations = 15 / wheel_circum
 left_motor.run_angle(-200, rotations * 360, wait=False)
@@ -71,9 +77,7 @@ else:
 
 new_distance = (ultrasonic_sensor.distance()) / 10
 
-distance_traveled = 0
-travel_distance = 205
-while distance_traveled < travel_distance:
+while True:
 #while True:
     #diff = abs(new_distance - current_distance) / 2
     buttonPress()
@@ -119,7 +123,6 @@ while distance_traveled < travel_distance:
             buttonPress()
             right_motor.run_angle(-360, 0.5 * 360)
 
-    distance_traveled += 0.26 * wheel_circum
     #sleep(0.2)
 
 
