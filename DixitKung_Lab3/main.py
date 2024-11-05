@@ -42,26 +42,33 @@ L = 12
 def calculate_pose(x, y, theta, dt, left_u, right_u, r, L):
     left_v = left_u * (pi/180) * r
     right_v = right_u * (pi/180) * r
-    R = (L/2) * ((left_v + right_v) / (right_v - left_v))
-    omega = (right_v - left_v) / L
-    ICCx = x - (R * sin(theta))
-    ICCy = y + (R * cos(theta))
 
-    # rotation_matrix = np.array([
-    #     [cos(omega*dt), -sin(omega*dt), 0],
-    #     [sin(omega*dt), cos(omega*dt), 0],
-    #     [0, 0, 1]
-    # ])
-    # position_matrix = np.array([[x-ICCx], [y-ICCy], [theta]])
-    # addition_matrix = np.array([[ICCx], [ICCy], [omega*dt]])
+    if (left_v == right_v):
+        new_x = x + (left_v * cos(theta) * dt)
+        new_y = y + (left_v * sin(theta) * dt)
+        new_theta = theta
+        return new_x, new_y, new_theta
+    else:
+        R = (L/2) * ((left_v + right_v) / (right_v - left_v))
+        omega = (right_v - left_v) / L
+        ICCx = x - (R * sin(theta))
+        ICCy = y + (R * cos(theta))
 
-    # new_pose = np.add(rotation_matrix @ position_matrix, addition_matrix)
+        # rotation_matrix = np.array([
+        #     [cos(omega*dt), -sin(omega*dt), 0],
+        #     [sin(omega*dt), cos(omega*dt), 0],
+        #     [0, 0, 1]
+        # ])
+        # position_matrix = np.array([[x-ICCx], [y-ICCy], [theta]])
+        # addition_matrix = np.array([[ICCx], [ICCy], [omega*dt]])
 
-    new_x = ((cos(omega*dt) * (x-ICCx)) + (-sin(omega*dt) * (y-ICCy))) + ICCx
-    new_y = ((sin(omega*dt) * (x-ICCx)) + (cos(omega*dt) * (y-ICCy))) + ICCy
-    new_theta = theta + (omega*dt)
+        # new_pose = np.add(rotation_matrix @ position_matrix, addition_matrix)
 
-    return new_x, new_y, new_theta
+        new_x = ((cos(omega*dt) * (x-ICCx)) + (-sin(omega*dt) * (y-ICCy))) + ICCx
+        new_y = ((sin(omega*dt) * (x-ICCx)) + (cos(omega*dt) * (y-ICCy))) + ICCy
+        new_theta = theta + (omega*dt)
+
+        return new_x, new_y, new_theta
 
 
 # Objective 1
