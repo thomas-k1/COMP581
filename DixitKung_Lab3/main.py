@@ -83,12 +83,12 @@ right_motor.stop()
 ev3.screen.clear()
 time_taken = time.time() - start_time
 print(time.time() - start_time)
-ev3.screen.draw_text(50, 60, "Time: {}".format(time_taken))
+ev3.screen.draw_text(50, 20, "Time: {}".format(time_taken))
 
-new_x, new_y, new_theta = calculate_pose(2, 0.5, pi/2, time_taken, 200, 200, wheel_radius, L)
-ev3.screen.draw_text(50, 80, "x: {}".format(new_x))
-ev3.screen.draw_text(50, 100, "y: {}".format(new_y))
-ev3.screen.draw_text(50, 120, "theta: {}".format(new_theta))
+new_x, new_y, new_theta = calculate_pose(200, 50, pi/2, time_taken, 200, 200, wheel_radius, L)
+ev3.screen.draw_text(50, 40, "x: {}".format(new_x))
+ev3.screen.draw_text(50, 60, "y: {}".format(new_y))
+ev3.screen.draw_text(50, 80, "theta: {}".format(new_theta))
 
 
 rotations = 15 / wheel_circum
