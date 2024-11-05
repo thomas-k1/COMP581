@@ -8,6 +8,8 @@ from pybricks.media.ev3dev import SoundFile, ImageFile
 
 from utime import sleep
 import time
+from math import pi, sin, cos
+#import numpy as np
 
 
 # This program requires LEGO EV3 MicroPython v2.0 or higher.
@@ -33,8 +35,34 @@ right_motor = Motor(Port.A)
 
 
 wheel_diameter = 5.6
+wheel_radius = 2.8
 wheel_circum = (3.14159265358979) * wheel_diameter
 L = 12
+
+def calculate_pose(x, y, theta, dt, left_u, right_u, r, L):
+    left_v = left_u * (pi/180) * r
+    right_v = right_u * (pi/180) * r
+    R = (L/2) * ((left_v + right_v) / (right_v - left_v))
+    omega = (right_v - left_v) / L
+    ICCx = x - (R * sin(theta))
+    ICCy = y + (R * cos(theta))
+
+    # rotation_matrix = np.array([
+    #     [cos(omega*dt), -sin(omega*dt), 0],
+    #     [sin(omega*dt), cos(omega*dt), 0],
+    #     [0, 0, 1]
+    # ])
+    # position_matrix = np.array([[x-ICCx], [y-ICCy], [theta]])
+    # addition_matrix = np.array([[ICCx], [ICCy], [omega*dt]])
+
+    # new_pose = np.add(rotation_matrix @ position_matrix, addition_matrix)
+
+    new_x = ((cos(omega*dt) * (x-ICCx)) + (-sin(omega*dt) * (y-ICCy))) + ICCx
+    new_y = ((sin(omega*dt) * (x-ICCx)) + (cos(omega*dt) * (y-ICCy))) + ICCy
+    new_theta = theta + (omega*dt)
+
+    return new_x, new_y, new_theta
+
 
 # Objective 1
 start_time = time.time()
@@ -49,6 +77,12 @@ ev3.screen.clear()
 time_taken = time.time() - start_time
 print(time.time() - start_time)
 ev3.screen.draw_text(50, 60, "Time: {}".format(time_taken))
+
+new_x, new_y, new_theta = calculate_pose(2, 0.5, pi/2, time_taken, 200, 200, wheel_radius, L)
+ev3.screen.draw_text(50, 80, "x: {}".format(new_x))
+ev3.screen.draw_text(50, 100, "y: {}".format(new_y))
+ev3.screen.draw_text(50, 120, "theta: {}".format(new_theta))
+
 
 rotations = 15 / wheel_circum
 left_motor.run_angle(-200, rotations * 360, wait=False)
