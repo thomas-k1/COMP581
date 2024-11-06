@@ -115,7 +115,7 @@ right_motor.run_angle(-250, 0.5 * 360)
 #right_motor.run_angle(-250, 0.5 * 360)
 time_taken = time.time() - start_time
 
-new_x, new_y, new_theta = calculate_pose(new_x, new_y, new_theta, time_taken, 250, -250, wheel_radius, L)
+hitpoint_x, hitpoint_y, hitpoint_theta = calculate_pose(new_x, new_y, new_theta, time_taken, 250, -250, wheel_radius, L)
 
 # Objective 2
 adjustments = 0.3 * 360
@@ -127,22 +127,23 @@ if current_distance < 10:
     left_motor.run_angle(100, adjustments)
     right_motor.brake()
     time_taken = time.time() - start_time
-    new_x, new_y, new_theta = calculate_pose(new_x, new_y, new_theta, time_taken, 100, 75, wheel_radius, L)
+    new_x, new_y, new_theta = calculate_pose(hitpoint_x, hitpoint_y, hitpoint_theta, time_taken, 100, 75, wheel_radius, L)
 elif current_distance > 20:
     left_motor.run_angle(75, adjustments, wait=False)
     right_motor.run_angle(100, adjustments)
     left_motor.brake()
     time_taken = time.time() - start_time
-    new_x, new_y, new_theta = calculate_pose(new_x, new_y, new_theta, time_taken, 75, 100, wheel_radius, L)
+    new_x, new_y, new_theta = calculate_pose(hitpoint_x, hitpoint_y, hitpoint_theta, time_taken, 75, 100, wheel_radius, L)
 else:
     left_motor.run_angle(100, adjustments, wait=False)
     right_motor.run_angle(100, adjustments)
     time_taken = time.time() - start_time
-    new_x, new_y, new_theta = calculate_pose(new_x, new_y, new_theta, time_taken, 100, 100, wheel_radius, L)
+    new_x, new_y, new_theta = calculate_pose(hitpoint_x, hitpoint_y, hitpoint_theta, time_taken, 100, 100, wheel_radius, L)
 
 new_distance = (ultrasonic_sensor.distance()) / 10
 
-while True:
+flag = True
+while flag:
 #while True:
     #diff = abs(new_distance - current_distance) / 2
     buttonPress()
@@ -221,42 +222,34 @@ while True:
             time_taken = time.time() - start_time
             new_x, new_y, new_theta = calculate_pose(new_x, new_y, new_theta, time_taken, 360, -360, wheel_radius, L)
 
+    if abs(new_x - hitpoint_x) <= 5 and abs(new_y - hitpoint_y) <= 5:
+        flag = False
     #sleep(0.2)
 
+while new_theta != 0:
+    if new_theta > 0:
+        start_time = time.time()
+        left_motor.run_angle(150, 1, wait=False)
+        right_motor.run_angle(-150, 1)
+        time_taken = time.time() - start_time
+        new_x, new_y, new_theta = calculate_pose(new_x, new_y, new_theta, time_taken, 150, -150, wheel_radius, L)
+    else:
+        start_time = time.time()
+        left_motor.run_angle(-150, 1, wait=False)
+        right_motor.run_angle(150, 1)
+        time_taken = time.time() - start_time
+        new_x, new_y, new_theta = calculate_pose(new_x, new_y, new_theta, time_taken, -150, 150, wheel_radius, L)
 
+x_offset = 200 - new_x
+y_offset = new_y - 50
+rotations = x_offset / wheel_circum
+left_motor.run_angle(200, rotations * 360, wait=False)
+right_motor.run_angle(200, rotations * 360)
 
-'''
-while True:
-    current_distance = (ultrasonic_sensor.distance()) / 10
-    if current_distance < 10:
-        left_motor.stop()
-        right_motor.stop()
-        left_motor.run_angle(250, 1 * 360, wait=False)
-        closest = 255
-        angle = 0
-        while left_motor.speed() > 0:
-            curr = (ultrasonic_sensor.distance()) / 10
-            if curr < closest:
-                closest = curr
-                angle = left_motor.angle()
-        left_motor.run_angle(250, angle)
-    elif current_distance >= 20:
-        left_motor.stop()
-        right_motor.stop()
-        left_motor.run_angle(250, 1 * 360, wait=False)
-        closest = 255
-        angle = 0
-        while left_motor.speed() > 0:
-            curr = (ultrasonic_sensor.distance()) / 10
-            if curr < closest:
-                closest = curr
-                angle = left_motor.angle()
-        left_motor.run_angle(250, angle)
-    #elif current_distance < 20:
-    left_motor.run(100)
-    right_motor.run(100)
-
-    sleep(1)
-'''
+left_motor.run_angle(250, 180, wait=False)
+right_motor.run_angle(-250, 180)
+rotations = y_offset / wheel_circum
+left_motor.run_angle(200, rotations * 360, wait=False)
+right_motor.run_angle(200, rotations * 360)
 
 ev3.speaker.beep()
