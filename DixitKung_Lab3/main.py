@@ -15,22 +15,31 @@ print(time.time())
 # This program requires LEGO EV3 MicroPython v2.0 or higher.
 # Click "Open user guide" on the EV3 extension tab for more information.
 
+def go_to_start():
+    left_motor.run_time(200, 1000, wait=False)
+    right_motor.run_time(-200, 1000)
+
+    rotations = (hitpoint_y - 50) / wheel_circum
+    left_motor.run_angle(200, rotations * 360, wait=False)
+    right_motor.run_angle(200, rotations * 360)
+
+
 def buttonPress():
     global new_x, new_y, new_theta
 
     if bump_sensor.pressed():
         rotations = 15 / wheel_circum
         start_time = time.time()
-        left_motor.run_angle(-200, rotations * 360, wait=False)
-        right_motor.run_angle(-200, rotations * 360)
+        left_motor.run_time(-200, 1000, wait=False)
+        right_motor.run_time(-200, 1000)
         time_taken = time.time() - start_time
-        new_x, new_y, new_theta = calculate_pose(new_x, new_y, new_theta, time_taken, -200, -200, wheel_radius, L)
+        new_x, new_y, new_theta = calculate_pose(new_x, new_y, new_theta, 1, -200, -200, wheel_radius, L)
 
         start_time = time.time()
-        left_motor.run_angle(193, 0.5 * 360, wait=False)
-        right_motor.run_angle(-193, 0.5 * 360)
+        left_motor.run_time(192.86, 1000, wait=False)
+        right_motor.run_time(-192.86, 1000)
         time_taken = time.time() - start_time
-        new_x, new_y, new_theta = calculate_pose(new_x, new_y, new_theta, time_taken, 193, -193, wheel_radius, L)
+        new_x, new_y, new_theta = calculate_pose(new_x, new_y, new_theta, 1, 193, -193, wheel_radius, L)
 
         start_time = time.time()
 
@@ -118,8 +127,10 @@ right_motor.run_time(-192.86, 1000)
 #right_motor.run_angle(-250, 0.5 * 360)
 time_taken = time.time() - start_time
 
-hitpoint_x, hitpoint_y, hitpoint_theta = calculate_pose(new_x, new_y, new_theta, time_taken, 192.86, -192.86, wheel_radius, L)
-
+new_x, new_y, new_theta = calculate_pose(new_x, new_y, new_theta, time_taken, 192.86, -192.86, wheel_radius, L)
+hitpoint_x = new_x
+hitpoint_y = new_y
+hitpoint_theta = new_theta
 # # Objective 2
 # adjustments = 0.3 * 360
 
@@ -150,14 +161,26 @@ while flag:
 #while True:
     #start_time = time.time()
     if (ultrasonic_sensor.distance() / 10) < 15:
-        left_motor.run(100)
-        right_motor.run(70)
+        left_motor.run_time(100, 1000, wait=False)
+        buttonPress()
+        if Button.CENTER in ev3.buttons.pressed():
+            go_to_start()
+            break
+        right_motor.run_time(70, 1000)
+        new_x, new_y, new_theta = calculate_pose(new_x, new_y, new_theta, 1, 100, 70, wheel_radius, L)
     else:
-        left_motor.run(70)
-        right_motor.run(100)
+        left_motor.run_time(70, 1000, wait=False)
+        buttonPress()
+        if Button.CENTER in ev3.buttons.pressed():
+            go_to_start()
+            break
+        right_motor.run_time(100, 1000)
+        new_x, new_y, new_theta = calculate_pose(new_x, new_y, new_theta, 1, 70, 100, wheel_radius, L)
 
     buttonPress()
-
+    if Button.CENTER in ev3.buttons.pressed():
+        go_to_start()
+        break
 
     # buttonPress()
 
@@ -181,10 +204,10 @@ while flag:
     #     time_taken = time.time() - start_time
     #     new_x, new_y, new_theta = calculate_pose(new_x, new_y, new_theta, time_taken, 100, 100, wheel_radius, L)
 
-    # start_time = time.time()
     # current_distance = new_distance
     # new_distance = (ultrasonic_sensor.distance()) / 10
 
+    # start_time = time.time()
     # if new_distance < 10:
     #     left_motor.run_angle(360, 0.5 * 360, wait=False)
     #     buttonPress()
