@@ -308,39 +308,41 @@ def calculate_pose_with_gyro(x, y, dt, left_u, right_u, gyro):
     left_v = left_u * (pi / 180) * wheel_radius
     right_v = right_u * (pi / 180) * wheel_radius
 
-    if (left_v == right_v):
-        new_x = x + (left_v * cos(theta) * dt)
-        new_y = y + (left_v * sin(theta) * dt)
-        new_theta = theta
-        return new_x, new_y, new_theta
+    if left_v == right_v:
+        new_x = x + (left_v * cos(gyro) * dt)
+        new_y = y + (left_v * sin(gyro) * dt)
+        return new_x, new_y, gyro
     else:
         omega = (right_v - left_v) / L
-        ICCx = x - (R * sin(theta))
-        ICCy = y + (R * cos(theta))
+        gyro += omega * dt
+        new_x = x + (left_v * cos(gyro) * dt)
+        new_y = y + (left_v * sin(gyro) * dt)
+        return new_x, new_y, gyro
 
-        # rotation_matrix = np.array([
-        #     [cos(omega*dt), -sin(omega*dt), 0],
-        #     [sin(omega*dt), cos(omega*dt), 0],
-        #     [0, 0, 1]
-        # ])
-        # position_matrix = np.array([[x-ICCx], [y-ICCy], [theta]])
-        # addition_matrix = np.array([[ICCx], [ICCy], [omega*dt]])
+def return_to_point(current_x, current_y, current_theta, target_x, target_y):
+    error_x = target_x - current_x
+    error_y = target_y - current_y
+    desired_theta = atan2(error_y, error_x)
 
-        # new_pose = np.add(rotation_matrix @ position_matrix, addition_matrix)
+    while abs(current_theta - desired_theta) > 5:
+        # Rotate until facing the correct direction
+        if current_theta < desired_theta:
+            left_motor.run(150)
+            right_motor.run(-150)
+        else:
+            left_motor.run(-150)
+            right_motor.run(150)
 
-        new_x = ((cos(omega*dt) * (x-ICCx)) + (-sin(omega*dt) * (y-ICCy))) + ICCx
-        new_y = ((sin(omega*dt) * (x-ICCx)) + (cos(omega*dt) * (y-ICCy))) + ICCy
-        new_theta = theta + (omega*dt)
+        current_theta = gyro_sensor.angle()
 
-        ev3.screen.clear()
-        ev3.screen.draw_text(50, 40, "x: {}".format(new_x))
-        ev3.screen.draw_text(50, 60, "y: {}".format(new_y))
-        ev3.screen.draw_text(50, 80, "theta: {}".format(new_theta))
+    # Drive forward to the target point
+    distance = sqrt(error_x ** 2 + error_y ** 2)
+    rotations = distance / wheel_circum
+    left_motor.run_angle(200, rotations * 360, wait=False)
+    right_motor.run_angle(200, rotations * 360)
 
-        return new_x, new_y, new_theta
-
-
-# Objective 1
+# Objective 1 - Move forward until bump sensor is pressed
+pid = PIDController(kp=1.0, ki=0.0, kd=0.5)
 start_time = time.time()
 
 while not bump_sensor.pressed():
@@ -352,10 +354,9 @@ while not bump_sensor.pressed():
 left_motor.stop()
 right_motor.stop()
 
-#ev3.screen.clear()
+ev3.screen.clear()
 time_taken = time.time() - start_time
-print(time.time() - start_time)
-ev3.screen.draw_text(50, 20, "Time: {}".format(time_taken))
+ev3.screen.draw_text(50, 20, "Time: {:.2f}".format(time_taken))
 
 new_x, new_y, new_theta = calculate_pose_with_gyro(200, 50, time_taken, 200, 200, gyro_sensor.angle())
 
