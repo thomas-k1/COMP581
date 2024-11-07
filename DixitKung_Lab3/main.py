@@ -10,12 +10,13 @@ from utime import sleep
 import time
 from math import pi, sin, cos
 #import numpy as np
-print(time.time())
 
 # This program requires LEGO EV3 MicroPython v2.0 or higher.
 # Click "Open user guide" on the EV3 extension tab for more information.
 
 def buttonPress():
+    global new_x, new_y, new_theta
+    
     if bump_sensor.pressed():
         rotations = 15 / wheel_circum
         start_time = time.time()
@@ -56,7 +57,6 @@ def calculate_pose(x, y, theta, dt, left_u, right_u, r, L):
         new_x = x + (left_v * cos(theta) * dt)
         new_y = y + (left_v * sin(theta) * dt)
         new_theta = theta
-        return new_x, new_y, new_theta
     else:
         R = (L/2) * ((left_v + right_v) / (right_v - left_v))
         omega = (right_v - left_v) / L
@@ -77,12 +77,13 @@ def calculate_pose(x, y, theta, dt, left_u, right_u, r, L):
         new_y = ((sin(omega*dt) * (x-ICCx)) + (cos(omega*dt) * (y-ICCy))) + ICCy
         new_theta = theta + (omega*dt)
 
-        ev3.screen.clear()
-        ev3.screen.draw_text(50, 40, "x: {}".format(new_x))
-        ev3.screen.draw_text(50, 60, "y: {}".format(new_y))
-        ev3.screen.draw_text(50, 80, "theta: {}".format(new_theta))
+    ev3.screen.clear()
+    ev3.screen.draw_text(50, 20, "Time: {}".format(time_taken))
+    ev3.screen.draw_text(50, 40, "x: {}".format(new_x))
+    ev3.screen.draw_text(50, 60, "y: {}".format(new_y))
+    ev3.screen.draw_text(50, 80, "theta: {}".format(new_theta))
 
-        return new_x, new_y, new_theta
+    return new_x, new_y, new_theta
 
 
 # Objective 1
@@ -94,10 +95,10 @@ while not bump_sensor.pressed():
 left_motor.stop()
 right_motor.stop()
 
-ev3.screen.clear()
+#ev3.screen.clear()
 time_taken = time.time() - start_time
 print(time.time() - start_time)
-ev3.screen.draw_text(50, 20, "Time: {}".format(time_taken))
+#ev3.screen.draw_text(50, 20, "Time: {}".format(time_taken))
 
 new_x, new_y, new_theta = calculate_pose(200, 50, pi/2, time_taken, 200, 200, wheel_radius, L)
 
