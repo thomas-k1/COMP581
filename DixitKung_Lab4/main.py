@@ -13,17 +13,18 @@ from math import pi, sin, cos
 
 ev3 = EV3Brick()
 
-left_motor = Motor(Port.A)
-right_motor = Motor(Port.D)
+left_motor = Motor(Port.D)
+right_motor = Motor(Port.A)
 ultrasonic_sensor = UltrasonicSensor(Port.S1)
-bump_sensor = TouchSensor(Port.S4)
+bump_sensor1 = TouchSensor(Port.S4)
+bump_sensor2 = TouchSensor(Port.S3)
 
 # pid params
 Kp = 2.0
 Ki = 0.0
 Kd = 0.5
 
-target_distance = 560
+target_distance = 14
 wheel_d = 5.6
 wheel_circ = wheel_d * 3.1416
 
@@ -32,7 +33,7 @@ wheel_circ = wheel_d * 3.1416
 def calculate_distance_from_degrees(degrees):
     return (degrees / 360) * wheel_circ
 
-distance_to_travel = 200
+distance_to_travel = 260
 
 def drive(speed, steering):
     max_speed = 300
@@ -49,7 +50,7 @@ def stop():
 
 def move_forward_until_bump():
     ev3.speaker.beep()
-    while not bump_sensor.pressed():
+    while not (bump_sensor1.pressed() or bump_sensor2.pressed()):
         drive(300, 0)
     stop()
     ev3.speaker.beep()
@@ -62,7 +63,7 @@ def back_up_and_turn_right():
     left_motor.run_angle(300, 260, Stop.BRAKE, wait=True)
     right_motor.run_angle(-300, 260, Stop.BRAKE, wait=True)
 
-
+## version 1
 def wall_following():
     left_motor.reset_angle(0)
     right_motor.reset_angle(0)
@@ -103,7 +104,7 @@ def wall_following():
         speed = 200
 
 
-        if bump_sensor.pressed():
+        if bump_sensor1.pressed() or bump_sensor2.pressed():
             print("Bump detected during wall following. Reversing and turning right.")
             stop()
             back_up_and_turn_right()
@@ -114,6 +115,63 @@ def wall_following():
 
     stop()
     ev3.speaker.beep()
+
+
+
+## version 2
+# def wall_following():
+#     left_motor.reset_angle(0)
+#     right_motor.reset_angle(0)
+
+#     last_error = 0
+#     last_steering = 0
+#     integral = 0
+#     last_time = time.time()
+
+#     while True:
+#         left_degrees = left_motor.angle()
+#         right_degrees = right_motor.angle()
+#         average_degrees = (abs(left_degrees) + abs(right_degrees)) / 2
+#         total_distance_traveled = calculate_distance_from_degrees(average_degrees)
+
+#         if total_distance_traveled >= distance_to_travel:
+#             print("Desired distance traveled. Stopping.")
+#             break
+
+#         distance_mm = ultrasonic_sensor.distance()
+#         if distance_mm <= 0 or distance_mm > 2550:
+#             print("Invalid sensor reading. Ignoring current reading.")
+#             continue
+
+#         distance_cm = distance_mm / 10
+#         error = target_distance - distance_cm
+#         error_scaled = error * 10
+#         current_time = time.time()
+#         delta_time = current_time - last_time
+#         last_time = current_time
+#         integral += error_scaled * delta_time
+#         derivative = (error_scaled - last_error) / delta_time if delta_time > 0 else 0
+#         last_error = error_scaled
+
+#         steering = (Kp * error_scaled) + (Ki * integral) + (Kd * derivative)
+#         steering = 0.7 * last_steering + 0.3 * steering  # Smooth adjustment
+#         last_steering = steering
+
+#         max_steering = 100
+#         steering = max(min(steering, max_steering), -max_steering)
+#         speed = 150  # Reduced speed for better control
+
+#         if bump_sensor1.pressed() or bump_sensor2.pressed():
+#             print("Bump detected during wall following. Reversing and turning right.")
+#             stop()
+#             back_up_and_turn_right()
+#             continue
+
+#         drive(speed, steering)
+#         wait(50)
+
+#     stop()
+#     ev3.speaker.beep()
 
 
 ev3.speaker.beep()
