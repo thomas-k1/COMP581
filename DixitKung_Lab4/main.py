@@ -101,7 +101,7 @@ def wall_following():
         steering = (Kp * error_scaled) + (Ki * integral) + (Kd * derivative)
         max_steering = 200
         steering = max(min(steering, max_steering), -max_steering)
-        speed = 200
+        speed = 150
 
 
         if bump_sensor1.pressed() or bump_sensor2.pressed():
