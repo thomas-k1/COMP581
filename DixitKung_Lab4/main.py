@@ -28,7 +28,6 @@ target_distance = 14
 wheel_d = 5.6
 wheel_circ = wheel_d * 3.1416
 
-
 x_pos = 50
 y_pos = 0
 theta = 0.896
@@ -83,48 +82,35 @@ def stop():
     right_motor.stop()
 
 
-def move_forward(x_pos, y_pos):
+def move_forward():
+    global x_pos, y_pos, theta
+    distance_to_goal = sqrt((250 - x_pos)**2 + (250 - y_pos)**2)
+    theta = atan((250 - y_pos) / (250 - x_pos))
+
+    # Adjust the robot's heading angle
+    left_motor.run_angle(200, -theta * 180 / pi * 2.3, wait=False)
+    right_motor.run_angle(200, theta * 180 / pi * 2.3, wait=True)
+
     while not (bump_sensor1.pressed() or bump_sensor2.pressed()):
-        distance_to_goal = sqrt((250 - x_pos)**2 + (250 - y_pos)**2)
-        theta = atan((250 - y_pos) / (250 - x_pos))
-
-        # Adjust the robot's heading angle
-        left_motor.run_angle(200, -theta * 180 / pi * 2.3, wait=False)
-        right_motor.run_angle(200, theta * 180 / pi * 2.3, wait=True)
-
-        if bump_sensor1.pressed() or bump_sensor2.pressed():
-            break
-
-        # Calculate rotations needed to reach the goal
-        rotations = distance_to_goal / wheel_circ
-        rotation_angle = rotations * 360
-
-        # Move forward in smaller increments to continuously check bump sensors
-        increment = 30  # degrees per increment
-        moved_angle = 0
+        #rotations = distance_to_goal / wheel_circ
+        #rotation_angle = rotations * 360
         start_time = time.time()
+        left_motor.run_time(500, 500, wait=False)
+        right_motor.run_time(500, 500, wait=True)
 
-        while moved_angle < rotation_angle:
-            if bump_sensor1.pressed() or bump_sensor2.pressed():
-                stop()
-                ev3.speaker.beep()
-                return
-
-            left_motor.run_angle(500, increment, wait=False)
-            right_motor.run_angle(500, increment, wait=True)
-            moved_angle += increment
-
-        left_motor.stop()
-        right_motor.stop()
+        #left_motor.stop()
+        #right_motor.stop()
         time_taken = time.time() - start_time
 
         # Update position
-        x_pos, y_pos, theta = calculate_pose(50, 0, theta, time_taken, 500, 500, wheel_d / 2, 12)
+        x_pos, y_pos, theta = calculate_pose(x_pos, y_pos, theta, 0.5 - 0.3, 500, 500, wheel_d / 2, 12)
 
         # Check if the robot is within the goal region
         if (x_pos < 260 and x_pos > 240) and (y_pos < 260 and y_pos > 240):
+            wait(10000000)
             break
 
+        wait(50)
         # wait(10000000)
     stop()
     ev3.speaker.beep()
@@ -135,10 +121,12 @@ def back_up_and_turn_right():
     left_motor.run_time(-300, 750, Stop.BRAKE, wait=True)
     right_motor.run_time(-300, 750, Stop.BRAKE, wait=True)
     left_motor.run_angle(300, 260, Stop.BRAKE, wait=True)
-    right_motor.run_angle(-300, 260, Stop.BRAKE, wait=True)
+    right_motor.run_angle(-300, 150, Stop.BRAKE, wait=True)
 
 ## version 1
 def wall_following():
+    global x_pos, y_pos, theta
+
     left_motor.reset_angle(0)
     right_motor.reset_angle(0)
 
@@ -150,11 +138,11 @@ def wall_following():
         left_degrees = left_motor.angle()
         right_degrees = right_motor.angle()
         average_degrees = (abs(left_degrees) + abs(right_degrees)) / 2
-        total_distance_traveled = calculate_distance_from_degrees(average_degrees)
+        #total_distance_traveled = calculate_distance_from_degrees(average_degrees)
 
-        if total_distance_traveled >= distance_to_travel:
-            print("Desired distance traveled. Stopping.")
-            break
+        #if total_distance_traveled >= distance_to_travel:
+        #    print("Desired distance traveled. Stopping.")
+        #    break
 
         distance_mm = ultrasonic_sensor.distance()
 
@@ -163,6 +151,8 @@ def wall_following():
             print("Invalid sensor reading. Stopping the robot.")
             break
         elif distance_mm > 500:
+            print(distance_mm)
+            #wait(1000000000)
             # x_pos, y_pos, theta = calculate_pose(x_pos, y_pos, theta, delta_time, 500, 500, wheel_d/2, 12)
             break
 
@@ -290,7 +280,7 @@ def wall_following():
 
 
 while (x_pos > 260 or x_pos < 240) and (y_pos > 260 or y_pos < 240):
-    move_forward(x_pos, y_pos)
+    move_forward()
     if (x_pos < 260 and x_pos > 240) and (y_pos < 260 and y_pos > 240):
         break
     back_up_and_turn_right()
