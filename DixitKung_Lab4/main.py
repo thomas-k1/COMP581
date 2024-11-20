@@ -8,7 +8,7 @@ from pybricks.media.ev3dev import SoundFile, ImageFile
 
 from utime import sleep
 import time
-from math import pi, sin, cos
+from math import pi, sin, cos, sqrt, atan
 
 
 ev3 = EV3Brick()
@@ -27,6 +27,15 @@ Kd = 0.5
 target_distance = 14
 wheel_d = 5.6
 wheel_circ = wheel_d * 3.1416
+
+
+x_pos = 50
+y_pos = 0
+theta = 0.896
+
+
+
+
 
 def calculate_pose(x, y, theta, dt, left_u, right_u, r, L):
     left_v = left_u * (pi/180) * r
@@ -66,16 +75,57 @@ def drive(speed, steering):
     left_motor.run(left_speed)
     right_motor.run(right_speed)
 
+    return left_speed, right_speed
+
 
 def stop():
     left_motor.stop()
     right_motor.stop()
 
 
-def move_forward_until_bump():
-    ev3.speaker.beep()
+def move_forward(x_pos, y_pos):
     while not (bump_sensor1.pressed() or bump_sensor2.pressed()):
-        drive(300, 0)
+        distance_to_goal = sqrt((250 - x_pos)**2 + (250 - y_pos)**2)
+        theta = atan((250 - y_pos) / (250 - x_pos))
+
+        # Adjust the robot's heading angle
+        left_motor.run_angle(200, -theta * 180 / pi * 2.3, wait=False)
+        right_motor.run_angle(200, theta * 180 / pi * 2.3, wait=True)
+
+        if bump_sensor1.pressed() or bump_sensor2.pressed():
+            break
+
+        # Calculate rotations needed to reach the goal
+        rotations = distance_to_goal / wheel_circ
+        rotation_angle = rotations * 360
+
+        # Move forward in smaller increments to continuously check bump sensors
+        increment = 30  # degrees per increment
+        moved_angle = 0
+        start_time = time.time()
+
+        while moved_angle < rotation_angle:
+            if bump_sensor1.pressed() or bump_sensor2.pressed():
+                stop()
+                ev3.speaker.beep()
+                return
+
+            left_motor.run_angle(500, increment, wait=False)
+            right_motor.run_angle(500, increment, wait=True)
+            moved_angle += increment
+
+        left_motor.stop()
+        right_motor.stop()
+        time_taken = time.time() - start_time
+
+        # Update position
+        x_pos, y_pos, theta = calculate_pose(50, 0, theta, time_taken, 500, 500, wheel_d / 2, 12)
+
+        # Check if the robot is within the goal region
+        if (x_pos < 260 and x_pos > 240) and (y_pos < 260 and y_pos > 240):
+            break
+
+        # wait(10000000)
     stop()
     ev3.speaker.beep()
     wait(1000)
@@ -112,6 +162,9 @@ def wall_following():
             stop()
             print("Invalid sensor reading. Stopping the robot.")
             break
+        elif distance_mm > 500:
+            # x_pos, y_pos, theta = calculate_pose(x_pos, y_pos, theta, delta_time, 500, 500, wheel_d/2, 12)
+            break
 
         distance_cm = distance_mm / 10
         error = target_distance - distance_cm
@@ -134,7 +187,9 @@ def wall_following():
             back_up_and_turn_right()
             continue
 
-        drive(speed, steering)
+
+        var1, var2 = drive(speed, steering)
+        x_pos, y_pos, theta = calculate_pose(x_pos, y_pos, theta, delta_time, var1, var2, wheel_d/2, 12)
         wait(50)
 
     stop()
@@ -198,31 +253,46 @@ def wall_following():
 #     ev3.speaker.beep()
 
 
-ev3.speaker.beep()
+# ev3.speaker.beep()
 
-while Button.CENTER not in ev3.buttons.pressed():
-    wait(10)
+# while Button.CENTER not in ev3.buttons.pressed():
+#     wait(10)
 
 
-ev3.speaker.beep()
-#move_forward_until_bump()
-#back_up_and_turn_right()
-#wall_following()
+# ev3.speaker.beep()
+# #move_forward_until_bump()
+# #back_up_and_turn_right()
+# #wall_following()
 
-distance_to_goal = 320.156
-theta = 0.896 # arctan(2.5/2)
+# distance_to_goal = 320.156
+# theta = 0.896 # arctan(2.5/2)
 
-left_motor.run_angle(200, -theta * 180/pi * 2.3, wait=False)
-right_motor.run_angle(200, theta * 180/pi * 2.3)
+# left_motor.run_angle(200, -theta * 180/pi * 2.3, wait=False)
+# right_motor.run_angle(200, theta * 180/pi * 2.3)
 
-start_time = time.time()
-rotations = distance_to_goal / wheel_circ
-left_motor.run_angle(500, rotations * 360, wait=False)
-right_motor.run_angle(500, rotations * 360)
-left_motor.stop()
-right_motor.stop()
-time_taken = time.time() - start_time
+# start_time = time.time()
+# rotations = distance_to_goal / wheel_circ
+# left_motor.run_angle(500, rotations * 360, wait=False)
+# right_motor.run_angle(500, rotations * 360)
+# left_motor.stop()
+# right_motor.stop()
+# time_taken = time.time() - start_time
 
-new_x, new_y, new_theta = calculate_pose(50, 0, theta, time_taken, 500, 500, wheel_d/2, 12)
+# new_x, new_y, new_theta = calculate_pose(50, 0, theta, time_taken, 500, 500, wheel_d/2, 12)
 
-wait(10000000)
+# wait(10000000)
+
+
+
+
+
+
+
+
+while (x_pos > 260 or x_pos < 240) and (y_pos > 260 or y_pos < 240):
+    move_forward(x_pos, y_pos)
+    if (x_pos < 260 and x_pos > 240) and (y_pos < 260 and y_pos > 240):
+        break
+    back_up_and_turn_right()
+    wall_following()
+    
