@@ -28,7 +28,31 @@ target_distance = 14
 wheel_d = 5.6
 wheel_circ = wheel_d * 3.1416
 
+def calculate_pose(x, y, theta, dt, left_u, right_u, r, L):
+    left_v = left_u * (pi/180) * r
+    right_v = right_u * (pi/180) * r
 
+    if (left_v == right_v):
+        new_x = x + (left_v * cos(theta) * dt)
+        new_y = y + (left_v * sin(theta) * dt)
+        new_theta = theta
+    else:
+        R = (L/2) * ((left_v + right_v) / (right_v - left_v))
+        omega = (right_v - left_v) / L
+        ICCx = x - (R * sin(theta))
+        ICCy = y + (R * cos(theta))
+
+        new_x = ((cos(omega*dt) * (x-ICCx)) + (-sin(omega*dt) * (y-ICCy))) + ICCx
+        new_y = ((sin(omega*dt) * (x-ICCx)) + (cos(omega*dt) * (y-ICCy))) + ICCy
+        new_theta = theta + (omega*dt)
+
+    ev3.screen.clear()
+    ev3.screen.draw_text(50, 20, "Time: {}".format(dt))
+    ev3.screen.draw_text(50, 40, "x: {}".format(new_x))
+    ev3.screen.draw_text(50, 60, "y: {}".format(new_y))
+    ev3.screen.draw_text(50, 80, "theta: {}".format(new_theta))
+
+    return new_x, new_y, new_theta
 
 def calculate_distance_from_degrees(degrees):
     return (degrees / 360) * wheel_circ
@@ -180,8 +204,25 @@ while Button.CENTER not in ev3.buttons.pressed():
     wait(10)
 
 
-
 ev3.speaker.beep()
-move_forward_until_bump()
-back_up_and_turn_right()
-wall_following()
+#move_forward_until_bump()
+#back_up_and_turn_right()
+#wall_following()
+
+distance_to_goal = 320.156
+theta = (pi / 2) - 0.896 # arctan(2.5/2)
+
+left_motor.run_angle(200, theta * 180/pi, wait=False)  # Rotate left motor forward by 180 degrees
+right_motor.run_angle(200, -theta * 180/pi)     
+
+start_time = time.time()
+rotations = distance_to_goal / wheel_circ
+left_motor.run_angle(500, rotations * 360, wait=False)
+right_motor.run_angle(500, rotations * 360)
+left_motor.stop()
+right_motor.stop()
+time_taken = time.time() - start_time
+
+new_x, new_y, new_theta = calculate_pose(50, 0, theta, time_taken, 200, 200, wheel_d/2, 12)
+
+wait(10000000)
