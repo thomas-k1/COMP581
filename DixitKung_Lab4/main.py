@@ -210,10 +210,10 @@ ev3.speaker.beep()
 #wall_following()
 
 distance_to_goal = 320.156
-theta = (pi / 2) - 0.896 # arctan(2.5/2)
+theta = 0.896 # arctan(2.5/2)
 
-left_motor.run_angle(200, theta * 180/pi, wait=False)  # Rotate left motor forward by 180 degrees
-right_motor.run_angle(200, -theta * 180/pi)     
+left_motor.run_angle(200, -theta * 180/pi * 2.3, wait=False)
+right_motor.run_angle(200, theta * 180/pi * 2.3)
 
 start_time = time.time()
 rotations = distance_to_goal / wheel_circ
@@ -223,6 +223,6 @@ left_motor.stop()
 right_motor.stop()
 time_taken = time.time() - start_time
 
-new_x, new_y, new_theta = calculate_pose(50, 0, theta, time_taken, 200, 200, wheel_d/2, 12)
+new_x, new_y, new_theta = calculate_pose(50, 0, theta, time_taken, 500, 500, wheel_d/2, 12)
 
 wait(10000000)
