@@ -123,10 +123,10 @@ def align_to_target():
     global theta
     target_theta = atan(250 / 200)
     if theta != 0:
-        left_motor.run_angle(200, theta * 180 / pi * 2.3, wait=False)
-        right_motor.run_angle(200, -theta * 180 / pi * 2.3, wait=True)
-    left_motor.run_angle(200, -target_theta * 180 / pi * 2.3, wait=False)
-    right_motor.run_angle(200, target_theta * 180 / pi * 2.3, wait=True)
+        left_motor.run_angle(200, 145 * 2.3, wait=False)
+        right_motor.run_angle(200, -145 * 2.3 , wait=True)
+    #left_motor.run_angle(200, -target_theta * 180 / pi * 2.3, wait=False)
+    #right_motor.run_angle(200, target_theta * 180 / pi * 2.3, wait=True)
     theta = target_theta
 
 def wall_following():
@@ -136,27 +136,29 @@ def wall_following():
     while True:
         num += 1
         if (ultrasonic_sensor.distance() / 10) < 30:
-            left_motor.run_time(100, 1000, wait=False)
+            left_motor.run_time(160, 1000, wait=False)
             buttonPress()
-            right_motor.run_time(70, 1000)
-            x_pos, x_pos, theta = calculate_pose(x_pos, x_pos, theta, 1, 100, 70, wheel_d / 2, 12)
+            right_motor.run_time(105, 1000)
+            x_pos, x_pos, theta = calculate_pose(x_pos, x_pos, theta, 1 - 0.3, 160, 105, wheel_d / 2, 12)
         else:
-            left_motor.run_time(70, 1000, wait=False)
+            left_motor.run_time(105, 1000, wait=False)
             buttonPress()
-            right_motor.run_time(100, 1000)
-            x_pos, x_pos, theta = calculate_pose(x_pos, x_pos, theta, 1, 70, 100, wheel_d / 2, 12)
+            right_motor.run_time(160, 1000)
+            x_pos, x_pos, theta = calculate_pose(x_pos, x_pos, theta, 1 - 0.3, 105, 160, wheel_d / 2, 12)
 
-            # Check if the robot has reached the target line
-            target_slope = 250 / 200
-            current_slope = (y_pos - 0) / (x_pos - 50) if (x_pos - 50) != 0 else float('inf')
-            if num >= 100 and abs(current_slope - target_slope) < 0.1:
-                num = 0
-                print("Reached the target line. Aligning to target direction.")
-                stop()
-                align_to_target()
-                return
+        # Check if the robot has reached the target line
+        target_slope = 250 / 200
+        current_slope = (y_pos - 0) / (x_pos - 50) if (x_pos - 50) != 0 else float('inf')
+        print(num)
+        print(abs(current_slope - target_slope))
+        if num >= 25 and abs(current_slope - target_slope) < 0.35:
+            num = 0
+            print("Reached the target line. Aligning to target direction.")
+            stop()
+            align_to_target()
+            return
 
-            wait(50)
+        wait(50)
 
     stop()
     ev3.speaker.beep()
@@ -172,5 +174,5 @@ while (x_pos < 420 or x_pos > 480) or (y_pos < 420 or y_pos > 480):
         break
     back_up_and_turn_right()
     wall_following()
-    
+
 wait(1000000)
