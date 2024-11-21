@@ -114,7 +114,7 @@ def move_forward():
         x_pos, y_pos, theta = calculate_pose(x_pos, y_pos, theta, 0.5 - 0.3, 500, 500, wheel_d / 2, 12)
 
         # Check if the robot is within the goal region
-        if (x_pos < 260 and x_pos > 240) and (y_pos < 260 and y_pos > 240):
+        if (x_pos < 260 or x_pos > 240) and (y_pos < 260 or y_pos > 240):
             wait(10000000)
             break
 
@@ -300,7 +300,7 @@ def wall_following():
 
 while (x_pos > 260 or x_pos < 240) and (y_pos > 260 or y_pos < 240):
     move_forward()
-    if (x_pos < 260 and x_pos > 240) and (y_pos < 260 and y_pos > 240):
+    if (x_pos < 260 or x_pos > 240) and (y_pos < 260 or y_pos > 240):
         break
     back_up_and_turn_right()
     wall_following()
