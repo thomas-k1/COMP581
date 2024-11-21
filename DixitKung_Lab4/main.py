@@ -492,7 +492,8 @@ def wall_following():
         # Check if the robot has reached the target line
         target_slope = 250 / 200
         current_slope = (y_pos - 0) / (x_pos - 50) if (x_pos - 50) != 0 else float('inf')
-        if num % 100 == 0 and abs(current_slope - target_slope) < 0.1:
+        if num >= 100 and abs(current_slope - target_slope) < 0.1:
+            num = 0
             print("Reached the target line. Aligning to target direction.")
             stop()
             align_to_target()
