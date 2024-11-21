@@ -396,6 +396,14 @@ def stop():
 def move_forward():
     global x_pos, y_pos, theta
 
+
+    distance_to_goal = sqrt((250 - x_pos)**2 + (250 - y_pos)**2)
+    theta = atan((250 - y_pos) / (250 - x_pos))
+
+    # Adjust the robot's heading angle
+    left_motor.run_angle(200, -theta * 180 / pi * 2.3, wait=False)
+    right_motor.run_angle(200, theta * 180 / pi * 2.3, wait=True)
+
     while not (bump_sensor1.pressed() or bump_sensor2.pressed()):
         start_time = time.time()
         left_motor.run_time(500, 500, wait=False)
@@ -449,9 +457,9 @@ def wall_following():
             stop()
             print("Invalid sensor reading. Stopping the robot.")
             break
-        elif distance_mm > 1000:
-            print(distance_mm)
-            break
+        # elif distance_mm > 1000:
+        #     print(distance_mm)
+        #     break
 
         distance_cm = distance_mm / 10
         error = target_distance - distance_cm
