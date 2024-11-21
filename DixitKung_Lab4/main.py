@@ -30,7 +30,7 @@ wheel_circ = wheel_d * 3.1416
 
 x_pos = 50
 y_pos = 0
-theta = 0.896
+theta = 0
 
 
 
@@ -165,7 +165,7 @@ def wall_following():
             stop()
             print("Invalid sensor reading. Stopping the robot.")
             break
-        elif distance_mm > 500:
+        elif distance_mm > 1000:
             print(distance_mm)
             #wait(1000000000)
             # x_pos, y_pos, theta = calculate_pose(x_pos, y_pos, theta, delta_time, 500, 500, wheel_d/2, 12)
