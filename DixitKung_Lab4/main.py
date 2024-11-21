@@ -438,9 +438,11 @@ def back_up_and_turn_right():
 def align_to_target():
     global theta
     target_theta = atan(250 / 200)
-    angle_to_turn = target_theta - theta
-    left_motor.run_angle(200, angle_to_turn * 180 / pi * 2.3, wait=False)
-    right_motor.run_angle(200, -angle_to_turn * 180 / pi * 2.3, wait=True)
+    if theta != 0:
+        left_motor.run_angle(200, theta * 180 / pi * 2.3, wait=False)
+        right_motor.run_angle(200, -theta * 180 / pi * 2.3, wait=True)
+    left_motor.run_angle(200, target_theta * 180 / pi * 2.3, wait=False)
+    right_motor.run_angle(200, -target_theta * 180 / pi * 2.3, wait=True)
     theta = target_theta
 
 def wall_following():
