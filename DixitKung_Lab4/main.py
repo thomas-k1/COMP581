@@ -24,7 +24,7 @@ Kp = 2.0
 Ki = 0.0
 Kd = 0.5
 
-target_distance = 14
+target_distance = 16.5
 wheel_d = 5.6
 wheel_circ = wheel_d * 3.1416
 
@@ -55,10 +55,13 @@ def calculate_pose(x, y, theta, dt, left_u, right_u, r, L):
         new_theta = theta + (omega*dt)
 
     ev3.screen.clear()
-    ev3.screen.draw_text(50, 20, "Time: {}".format(dt))
+    #ev3.screen.draw_text(50, 20, "Time: {}".format(dt))
     ev3.screen.draw_text(50, 40, "x: {}".format(new_x))
     ev3.screen.draw_text(50, 60, "y: {}".format(new_y))
     ev3.screen.draw_text(50, 80, "theta: {}".format(new_theta))
+    print("x pos: " + str(new_x))
+    print("y pos: " + str(new_y))
+    print("theta: " + str(new_theta))  
 
     return new_x, new_y, new_theta
 
@@ -85,12 +88,9 @@ def stop():
 def move_forward():
     global x_pos, y_pos, theta
 
-    if theta > 0:
+    if theta != 0:
         left_motor.run_angle(200, theta * 180 / pi * 2.3, wait=False)
         right_motor.run_angle(200, -theta * 180 / pi * 2.3, wait=True)
-    elif theta < 0:
-        left_motor.run_angle(200, -theta * 180 / pi * 2.3, wait=False)
-        right_motor.run_angle(200, theta * 180 / pi * 2.3, wait=True)
 
     distance_to_goal = sqrt((250 - x_pos)**2 + (250 - y_pos)**2)
     theta = atan((250 - y_pos) / (250 - x_pos))
@@ -136,6 +136,10 @@ def back_up_and_turn_right():
     right_motor.run_angle(-300, 260, Stop.BRAKE, wait=True)
     time_taken = (260 / 300)
     x_pos, y_pos, theta = calculate_pose(x_pos, y_pos, theta, time_taken, 300, -300, wheel_d / 2, 12)
+
+    left_motor.run_time(300, 1000, Stop.BRAKE, wait=False)
+    right_motor.run_time(300, 1000, Stop.BRAKE, wait=True)
+    x_pos, y_pos, theta = calculate_pose(x_pos, y_pos, theta, 1, 300, 300, wheel_d / 2, 12)
 
 
 ## version 1
