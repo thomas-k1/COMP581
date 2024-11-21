@@ -475,10 +475,10 @@ def wall_following():
         current_time = time.time()
         delta_time = current_time - last_time
         last_time = current_time
-        integral += error_scaled * delta_time
-        derivative = (error_scaled - last_error) / delta_time if delta_time > 0 else 0
-        last_error = error_scaled
-        steering = (Kp * error_scaled) + (Ki * integral) + (Kd * derivative)
+        # integral += error_scaled * delta_time
+        # derivative = (error_scaled - last_error) / delta_time if delta_time > 0 else 0
+        # last_error = error_scaled
+        steering = Kp * error_scaled
         max_steering = 200
         steering = max(min(steering, max_steering), -max_steering)
         speed = 150
@@ -509,7 +509,7 @@ def wall_following():
     ev3.speaker.beep()
 
 # Main loop to execute the task
-while (x_pos < 240 or x_pos > 260) and (y_pos < 240 or y_pos > 260):
+while (x_pos < 240 or x_pos > 260) or (y_pos < 240 or y_pos > 260):
     move_forward()
     if (x_pos >= 240 and x_pos <= 260) and (y_pos >= 240 and y_pos <= 260):
         break
