@@ -10,7 +10,6 @@ from utime import sleep
 import time
 from math import pi, sin, cos, sqrt, atan
 
-
 ev3 = EV3Brick()
 
 left_motor = Motor(Port.D)
@@ -19,15 +18,7 @@ ultrasonic_sensor = UltrasonicSensor(Port.S1)
 bump_sensor1 = TouchSensor(Port.S4)
 bump_sensor2 = TouchSensor(Port.S3)
 
-# pid params
-Kp = 2.0
-Ki = 0.0
-Kd = 0.5
-
-target_distance = 16
 wheel_d = 5.6
-wheel_circ = wheel_d * 3.1416
-
 x_pos = 50
 y_pos = 0
 theta = 0
@@ -61,17 +52,7 @@ def calculate_pose(x, y, theta, dt, left_u, right_u, r, L):
 
     return new_x, new_y, new_theta
 
-def calculate_distance_from_degrees(degrees):
-    return (degrees / 360) * wheel_circ
 
-def drive(speed, steering):
-    max_speed = 300
-    left_speed = max(min(speed + steering, max_speed), -max_speed)
-    right_speed = max(min(speed - steering, max_speed), -max_speed)
-    left_motor.run(left_speed)
-    right_motor.run(right_speed)
-
-    return left_speed, right_speed
 
 def stop():
     left_motor.stop()
@@ -80,11 +61,9 @@ def stop():
 def move_forward():
     global x_pos, y_pos, theta
 
-
     distance_to_goal = sqrt((250 - x_pos)**2 + (250 - y_pos)**2)
     theta = atan((250 - y_pos) / (250 - x_pos))
 
-    # Adjust the robot's heading angle
     left_motor.run_angle(200, -theta * 180 / pi * 2.3, wait=False)
     right_motor.run_angle(200, theta * 180 / pi * 2.3, wait=True)
 
@@ -94,10 +73,8 @@ def move_forward():
         right_motor.run_time(500, 500, wait=True)
         time_taken = time.time() - start_time
 
-        # Update position
         x_pos, y_pos, theta = calculate_pose(x_pos, y_pos, theta, time_taken, 500, 500, wheel_d / 2, 12)
 
-        # Check if the robot is within the goal region
         if (x_pos >= 420 and x_pos <= 480) and (y_pos >= 420 and y_pos <= 480):
             stop()
             return
@@ -107,7 +84,7 @@ def move_forward():
     ev3.speaker.beep()
     wait(1000)
 
-def back_up_and_turn_right():
+def reverse():
     global x_pos, y_pos, theta
     left_motor.run_time(-300, 750, Stop.BRAKE, wait=False)
     right_motor.run_time(-300, 750, Stop.BRAKE, wait=True)
@@ -146,7 +123,7 @@ def wall_following():
             right_motor.run_time(160, 1000)
             x_pos, x_pos, theta = calculate_pose(x_pos, x_pos, theta, 1 - 0.3, 105, 160, wheel_d / 2, 12)
 
-        # Check if the robot has reached the target line
+        
         target_slope = 250 / 200
         current_slope = (y_pos - 0) / (x_pos - 50) if (x_pos - 50) != 0 else float('inf')
         print(num)
@@ -165,14 +142,17 @@ def wall_following():
 
 def buttonPress():
     if bump_sensor1.pressed() or bump_sensor2.pressed():
-        back_up_and_turn_right()
+        reverse()
 
-# Main loop to execute the task
+
+
+
 while (x_pos < 420 or x_pos > 480) or (y_pos < 420 or y_pos > 480):
     move_forward()
     if (x_pos >= 420 and x_pos <= 480) and (y_pos >= 420 and y_pos <= 480):
         break
-    back_up_and_turn_right()
+    reverse()
     wall_following()
 
 wait(1000000)
+ev3.speaker.beep()
