@@ -441,8 +441,8 @@ def align_to_target():
     if theta != 0:
         left_motor.run_angle(200, theta * 180 / pi * 2.3, wait=False)
         right_motor.run_angle(200, -theta * 180 / pi * 2.3, wait=True)
-    left_motor.run_angle(200, target_theta * 180 / pi * 2.3, wait=False)
-    right_motor.run_angle(200, -target_theta * 180 / pi * 2.3, wait=True)
+    left_motor.run_angle(200, -target_theta * 180 / pi * 2.3, wait=False)
+    right_motor.run_angle(200, target_theta * 180 / pi * 2.3, wait=True)
     theta = target_theta
 
 def wall_following():
@@ -452,7 +452,9 @@ def wall_following():
     last_time = time.time()
     integral = 0
 
+    num = 0
     while True:
+        num += 1
         distance_mm = ultrasonic_sensor.distance()
 
         if distance_mm <= 0 or distance_mm > 2550:
@@ -490,7 +492,7 @@ def wall_following():
         # Check if the robot has reached the target line
         target_slope = 250 / 200
         current_slope = (y_pos - 0) / (x_pos - 50) if (x_pos - 50) != 0 else float('inf')
-        if abs(current_slope - target_slope) < 0.1:
+        if num % 100 == 0 and abs(current_slope - target_slope) < 0.1:
             print("Reached the target line. Aligning to target direction.")
             stop()
             align_to_target()
