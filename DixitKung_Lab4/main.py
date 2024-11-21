@@ -84,6 +84,14 @@ def stop():
 
 def move_forward():
     global x_pos, y_pos, theta
+
+    if theta > 0:
+        left_motor.run_angle(200, theta * 180 / pi * 2.3, wait=False)
+        right_motor.run_angle(200, -theta * 180 / pi * 2.3, wait=True)
+    elif theta < 0:
+        left_motor.run_angle(200, -theta * 180 / pi * 2.3, wait=False)
+        right_motor.run_angle(200, theta * 180 / pi * 2.3, wait=True)
+
     distance_to_goal = sqrt((250 - x_pos)**2 + (250 - y_pos)**2)
     theta = atan((250 - y_pos) / (250 - x_pos))
 
@@ -286,3 +294,4 @@ while (x_pos > 260 or x_pos < 240) and (y_pos > 260 or y_pos < 240):
     back_up_and_turn_right()
     wall_following()
     
+wait(1000000)
