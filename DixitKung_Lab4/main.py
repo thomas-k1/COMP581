@@ -24,7 +24,7 @@ Kp = 2.0
 Ki = 0.0
 Kd = 0.5
 
-target_distance = 16.5
+target_distance = 16
 wheel_d = 5.6
 wheel_circ = wheel_d * 3.1416
 
@@ -371,9 +371,9 @@ def calculate_pose(x, y, theta, dt, left_u, right_u, r, L):
     ev3.screen.draw_text(50, 40, "x: {}".format(new_x))
     ev3.screen.draw_text(50, 60, "y: {}".format(new_y))
     ev3.screen.draw_text(50, 80, "theta: {}".format(new_theta))
-    print("x pos: " + str(new_x))
-    print("y pos: " + str(new_y))
-    print("theta: " + str(new_theta))  
+    #print("x pos: " + str(new_x))
+    #print("y pos: " + str(new_y))
+    #print("theta: " + str(new_theta))  
 
     return new_x, new_y, new_theta
 
@@ -431,7 +431,7 @@ def back_up_and_turn_right():
     x_pos, y_pos, theta = calculate_pose(x_pos, y_pos, theta, time_taken, -300, -300, wheel_d / 2, 12)
 
     left_motor.run_angle(300, 260, Stop.BRAKE, wait=False)
-    right_motor.run_angle(-300, 260, Stop.BRAKE, wait=True)
+    right_motor.run_angle(-300, 200, Stop.BRAKE, wait=True)
     time_taken = (260 / 300)
     x_pos, y_pos, theta = calculate_pose(x_pos, y_pos, theta, time_taken, 300, -300, wheel_d / 2, 12)
 
@@ -466,7 +466,11 @@ def wall_following():
         #     break
 
         distance_cm = distance_mm / 10
-        error = target_distance - distance_cm
+        if abs(target_distance - distance_cm) < 1.5:
+            error = 0
+        else:
+            error = target_distance - distance_cm
+        print(error)
         error_scaled = error * 10
         current_time = time.time()
         delta_time = current_time - last_time
