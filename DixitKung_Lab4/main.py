@@ -126,10 +126,17 @@ def move_forward():
 
 
 def back_up_and_turn_right():
+    global x_pos, y_pos, theta
     left_motor.run_time(-300, 750, Stop.BRAKE, wait=True)
     right_motor.run_time(-300, 750, Stop.BRAKE, wait=True)
+    time_taken = 750 / 1000
+    x_pos, y_pos, theta = calculate_pose(x_pos, y_pos, theta, time_taken, -300, -300, wheel_d / 2, 12)
+
     left_motor.run_angle(300, 260, Stop.BRAKE, wait=True)
-    right_motor.run_angle(-300, 150, Stop.BRAKE, wait=True)
+    right_motor.run_angle(-300, 260, Stop.BRAKE, wait=True)
+    time_taken = (260 / 300)
+    x_pos, y_pos, theta = calculate_pose(x_pos, y_pos, theta, time_taken, 300, -300, wheel_d / 2, 12)
+
 
 ## version 1
 def wall_following():
