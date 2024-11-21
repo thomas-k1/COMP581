@@ -500,7 +500,7 @@ def wall_following():
     ev3.speaker.beep()
 
 # Main loop to execute the task
-while (x_pos < 240 or x_pos > 260) or (y_pos < 240 or y_pos > 260):
+while (x_pos < 240 or x_pos > 260) and (y_pos < 240 or y_pos > 260):
     move_forward()
     if (x_pos >= 240 and x_pos <= 260) and (y_pos >= 240 and y_pos <= 260):
         break
